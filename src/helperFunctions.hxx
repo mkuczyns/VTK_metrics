@@ -16,6 +16,7 @@
 #include <algorithm>
 #include <vector>
 #include <chrono>
+#include <cmath>
 
 #include <vtkRenderWindow.h>
 #include <vtkRenderWindowInteractor.h>
@@ -46,6 +47,7 @@
 #include <vtkImageAlgorithm.h>
 
 #include <vtkImageGaussianSmooth.h>
+#include <vtkImageMedian3D.h>
 
 #include <vtkMarchingCubes.h>
 #include <vtkDecimatePro.h>
@@ -67,6 +69,8 @@
 #include <vtkProperty.h>
 #include <vtkImageReslice.h>
 #include <vtkImageMask.h>
+#include <vtkExtractVOI.h>
+#include <vtkImageCast.h>
 
 /* 
 *   A helper class to display messages with information about current slice

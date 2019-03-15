@@ -46,7 +46,7 @@ public:
    *
    *   @param   imageViewer   Image viewer from main
    */
-   void setImageViewer( vtkImageMapper* imageMapper, vtkRenderWindow* renderWindow );
+   void setImageViewer( vtkImageMapper* originalMapper, vtkImageMapper* segMapper, vtkRenderWindow* renderWindow );
 
    /*
    *   Set the class status mapper for the slice message.
@@ -71,6 +71,7 @@ public:
 
 protected:
    vtkImageMapper*   _ImageMapper;
+   vtkImageMapper*   _SegMapper;
    vtkRenderWindow*  _RenderWindow;
    vtkTextMapper*   _SliceStatusMapper;
    vtkTextMapper*   _WindowLevelStatusMapper;
@@ -78,8 +79,8 @@ protected:
    int slice;
    int minSlice;
    int maxSlice;
-   double windowLevel;
-   double window;
+   double windowLevelOG, windowLevelSEG;
+   double windowOG, windowSEG;
 
    /*
    *   Move the next slice in the image.

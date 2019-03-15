@@ -8,14 +8,17 @@
 
 #include "interactorStyler.hxx"
 
-void myInteractorStyler::setImageViewer( vtkImageMapper* imageMapper, vtkRenderWindow* renderWindow )
+void myInteractorStyler::setImageViewer( vtkImageMapper* originalMapper, vtkImageMapper* segMapper, vtkRenderWindow* renderWindow )
 {
     _RenderWindow = renderWindow;
-    _ImageMapper = imageMapper;
-    minSlice = imageMapper->GetWholeZMin();
-    maxSlice = imageMapper->GetWholeZMax();
-    windowLevel = imageMapper->GetColorLevel();
-    window = imageMapper->GetColorWindow();
+    _ImageMapper = originalMapper;
+    _SegMapper = segMapper;
+    minSlice = originalMapper->GetWholeZMin();
+    maxSlice = originalMapper->GetWholeZMax();
+    windowLevelOG = originalMapper->GetColorLevel();
+    windowLevelSEG = segMapper->GetColorLevel();
+    windowOG = originalMapper->GetColorWindow();
+    windowSEG = segMapper->GetColorWindow();
     
     // Start current slice at 0
     slice = minSlice;
@@ -43,6 +46,7 @@ void myInteractorStyler::moveSliceForward()
         slice += 1;
 
         _ImageMapper->SetZSlice( slice );
+        _SegMapper->SetZSlice( slice );
 
         // Create the message to be displayed.
         std::string msg = ImageMessage::sliceNumberFormat( slice, maxSlice );
@@ -60,6 +64,7 @@ void myInteractorStyler::moveSliceBackward()
         slice -= 1;
 
         _ImageMapper->SetZSlice( slice );
+        _SegMapper->SetZSlice( slice );
 
         // Create the message to be displayed.
         std::string msg = ImageMessage::sliceNumberFormat( slice, maxSlice );
@@ -72,12 +77,14 @@ void myInteractorStyler::moveSliceBackward()
 
 void myInteractorStyler::moveWindowLevelForward() 
 {
-    windowLevel += 10;
+    windowLevelOG += 10;
+    windowLevelSEG += 10;
 
-    _ImageMapper->SetColorLevel( windowLevel );
+    _ImageMapper->SetColorLevel( windowLevelOG );
+    _SegMapper->SetColorLevel( windowLevelSEG );
 
     // Create the message to be displayed.
-    std::string msg = ImageMessage::windowLevelFormat( int( windowLevel ) );
+    std::string msg = ImageMessage::windowLevelFormat( int( windowLevelOG ) );
 
     // Update the mapper and render.
     _WindowLevelStatusMapper->SetInput( msg.c_str() );
@@ -86,12 +93,14 @@ void myInteractorStyler::moveWindowLevelForward()
 
 void myInteractorStyler::moveWindowLevelBackward() 
 {
-    windowLevel -= 10;
+    windowLevelOG -= 10;
+    windowLevelSEG -= 10;
 
-    _ImageMapper->SetColorLevel( windowLevel );
+    _ImageMapper->SetColorLevel( windowLevelOG );
+    _SegMapper->SetColorLevel( windowLevelSEG );
 
     // Create the message to be displayed.
-    std::string msg = ImageMessage::windowLevelFormat( int( windowLevel ) );
+    std::string msg = ImageMessage::windowLevelFormat( int( windowLevelOG ) );
 
     // Update the mapper and render.
     _WindowLevelStatusMapper->SetInput( msg.c_str() );
@@ -100,12 +109,14 @@ void myInteractorStyler::moveWindowLevelBackward()
 
 void myInteractorStyler::moveWindowForward()
 {
-    window += 10;
+    windowOG += 10;
+    windowSEG += 10;
 
-    _ImageMapper->SetColorWindow( window );
+    _ImageMapper->SetColorWindow( windowOG );
+    _SegMapper->SetColorWindow( windowSEG );
 
     // Create the message to be displayed.
-    std::string msg = ImageMessage::windowFormat( int( window ) );
+    std::string msg = ImageMessage::windowFormat( int( windowOG ) );
 
     // Update the mapper and render.
     _WindowStatusMapper->SetInput( msg.c_str() );
@@ -114,12 +125,14 @@ void myInteractorStyler::moveWindowForward()
 
 void myInteractorStyler::moveWindowBackward()
 {
-    window -= 10;
+    windowOG -= 10;
+    windowSEG -= 10;
 
-    _ImageMapper->SetColorWindow( window );
+    _ImageMapper->SetColorWindow( windowOG );
+    _SegMapper->SetColorWindow( windowSEG );
 
     // Create the message to be displayed.
-    std::string msg = ImageMessage::windowFormat( int( window ) );
+    std::string msg = ImageMessage::windowFormat( int( windowOG ) );
 
     // Update the mapper and render.
     _WindowStatusMapper->SetInput( msg.c_str() );
