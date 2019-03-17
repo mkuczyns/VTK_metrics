@@ -8,17 +8,18 @@
 
 #include "interactorStyler.hxx"
 
-void myInteractorStyler::setImageViewer( vtkImageMapper* originalMapper, vtkImageMapper* segMapper, vtkRenderWindow* renderWindow )
+void myInteractorStyler::setImageViewer( vtkImageMapper* originalMapper, vtkImageMapper* segMapper, 
+                                         vtkImageMapper* gaussMapper, vtkImageMapper* medianMapper, vtkRenderWindow* renderWindow )
 {
     _RenderWindow = renderWindow;
     _ImageMapper = originalMapper;
     _SegMapper = segMapper;
+    _GaussMapper = gaussMapper;
+    _MedianMapper = medianMapper;
     minSlice = originalMapper->GetWholeZMin();
     maxSlice = originalMapper->GetWholeZMax();
-    windowLevelOG = originalMapper->GetColorLevel();
-    windowLevelSEG = segMapper->GetColorLevel();
-    windowOG = originalMapper->GetColorWindow();
-    windowSEG = segMapper->GetColorWindow();
+    windowLevel = originalMapper->GetColorLevel();
+    window = originalMapper->GetColorWindow();
     
     // Start current slice at 0
     slice = minSlice;
@@ -47,6 +48,8 @@ void myInteractorStyler::moveSliceForward()
 
         _ImageMapper->SetZSlice( slice );
         _SegMapper->SetZSlice( slice );
+        _GaussMapper->SetZSlice( slice );
+        _MedianMapper->SetZSlice( slice );
 
         // Create the message to be displayed.
         std::string msg = ImageMessage::sliceNumberFormat( slice, maxSlice );
@@ -65,6 +68,8 @@ void myInteractorStyler::moveSliceBackward()
 
         _ImageMapper->SetZSlice( slice );
         _SegMapper->SetZSlice( slice );
+        _GaussMapper->SetZSlice( slice );
+        _MedianMapper->SetZSlice( slice );
 
         // Create the message to be displayed.
         std::string msg = ImageMessage::sliceNumberFormat( slice, maxSlice );
@@ -77,14 +82,14 @@ void myInteractorStyler::moveSliceBackward()
 
 void myInteractorStyler::moveWindowLevelForward() 
 {
-    windowLevelOG += 10;
-    windowLevelSEG += 10;
+    windowLevel += 10;
 
-    _ImageMapper->SetColorLevel( windowLevelOG );
-    _SegMapper->SetColorLevel( windowLevelSEG );
+    _ImageMapper->SetColorLevel( windowLevel );
+    _GaussMapper->SetColorLevel( windowLevel );
+    _MedianMapper->SetColorLevel( windowLevel );
 
     // Create the message to be displayed.
-    std::string msg = ImageMessage::windowLevelFormat( int( windowLevelOG ) );
+    std::string msg = ImageMessage::windowLevelFormat( int( windowLevel ) );
 
     // Update the mapper and render.
     _WindowLevelStatusMapper->SetInput( msg.c_str() );
@@ -93,14 +98,14 @@ void myInteractorStyler::moveWindowLevelForward()
 
 void myInteractorStyler::moveWindowLevelBackward() 
 {
-    windowLevelOG -= 10;
-    windowLevelSEG -= 10;
+    windowLevel -= 10;
 
-    _ImageMapper->SetColorLevel( windowLevelOG );
-    _SegMapper->SetColorLevel( windowLevelSEG );
+    _ImageMapper->SetColorLevel( windowLevel );
+    _GaussMapper->SetColorLevel( windowLevel );
+    _MedianMapper->SetColorLevel( windowLevel );
 
     // Create the message to be displayed.
-    std::string msg = ImageMessage::windowLevelFormat( int( windowLevelOG ) );
+    std::string msg = ImageMessage::windowLevelFormat( int( windowLevel ) );
 
     // Update the mapper and render.
     _WindowLevelStatusMapper->SetInput( msg.c_str() );
@@ -109,14 +114,14 @@ void myInteractorStyler::moveWindowLevelBackward()
 
 void myInteractorStyler::moveWindowForward()
 {
-    windowOG += 10;
-    windowSEG += 10;
+    window += 10;
 
-    _ImageMapper->SetColorWindow( windowOG );
-    _SegMapper->SetColorWindow( windowSEG );
+    _ImageMapper->SetColorWindow( window );
+    _GaussMapper->SetColorWindow( window );
+    _MedianMapper->SetColorWindow( window );
 
     // Create the message to be displayed.
-    std::string msg = ImageMessage::windowFormat( int( windowOG ) );
+    std::string msg = ImageMessage::windowFormat( int( window ) );
 
     // Update the mapper and render.
     _WindowStatusMapper->SetInput( msg.c_str() );
@@ -125,14 +130,14 @@ void myInteractorStyler::moveWindowForward()
 
 void myInteractorStyler::moveWindowBackward()
 {
-    windowOG -= 10;
-    windowSEG -= 10;
+    window -= 10;
 
-    _ImageMapper->SetColorWindow( windowOG );
-    _SegMapper->SetColorWindow( windowSEG );
+    _ImageMapper->SetColorWindow( window );
+    _GaussMapper->SetColorWindow( window );
+    _MedianMapper->SetColorWindow( window );
 
     // Create the message to be displayed.
-    std::string msg = ImageMessage::windowFormat( int( windowOG ) );
+    std::string msg = ImageMessage::windowFormat( int( window ) );
 
     // Update the mapper and render.
     _WindowStatusMapper->SetInput( msg.c_str() );

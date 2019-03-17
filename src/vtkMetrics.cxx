@@ -52,6 +52,11 @@ int main(int argc, char* argv[])
 
     vtkSmartPointer<vtkImageData> imageSeg      = vtkSmartPointer<vtkImageData>::New();
 
+    double xMin[4] = { 0.1, 0.6, 0.1, 0.6 };
+    double xMax[4] = { 0.6, 1.1, 0.6, 1.1 };
+    double yMin[4] = { 0.1, 0.1, 0.6, 0.6 };
+    double yMax[4] = { 0.6, 0.6, 1.1, 1.1 };
+
     /***************************************************************
     *   Read in the provided image
     ***************************************************************/
@@ -110,10 +115,10 @@ int main(int argc, char* argv[])
     gaussianImage->DeepCopy( gaussianSmoothFilter->GetOutput() );
     std::cout << "Done! \n";
 
-    std::cout << "Applying a median filter with a kernel size of 3x3x3...";
+    std::cout << "Applying a median filter with a kernel size of 5x5x5...";
     vtkSmartPointer<vtkImageMedian3D> medianFilter = vtkSmartPointer<vtkImageMedian3D>::New();
     medianFilter->SetInputData( volume );
-    medianFilter->SetKernelSize( 3, 3, 3 );
+    medianFilter->SetKernelSize( 5, 5, 5 );
     medianFilter->Update();
 
     medianImage->DeepCopy( medianFilter->GetOutput() );
@@ -290,62 +295,51 @@ int main(int argc, char* argv[])
 
     // Create a message with current slice out of total slices and current window level.
     // Use Time New Roman as the font, size 18.
-    vtkSmartPointer<vtkTextProperty> sliceTextProperty = vtkSmartPointer<vtkTextProperty>::New();
-    sliceTextProperty->SetFontFamilyToTimes();
-    sliceTextProperty->SetFontSize( 18 );
-
-    vtkSmartPointer<vtkTextProperty> WindowLevelTextProperty = vtkSmartPointer<vtkTextProperty>::New();
-    WindowLevelTextProperty->SetFontFamilyToTimes();
-    WindowLevelTextProperty->SetFontSize(18);
-
-    vtkSmartPointer<vtkTextProperty> WindowTextProperty = vtkSmartPointer<vtkTextProperty>::New();
-    WindowTextProperty->SetFontFamilyToTimes();
-    WindowTextProperty->SetFontSize( 18 );
+    vtkSmartPointer<vtkTextProperty> textProperty = vtkSmartPointer<vtkTextProperty>::New();
+    textProperty->SetFontFamilyToTimes();
+    textProperty->SetFontSize( 18 );
 
     // Create the text mappers for both slice number, window level, and window. Use a helper class "ImageMessage" for this.
     vtkSmartPointer<vtkTextMapper> sliceTextMapper = vtkSmartPointer<vtkTextMapper>::New();
     std::string sliceMessage = ImageMessage::sliceNumberFormat( imageViewer->GetSliceMin(), imageViewer->GetSliceMax() );
     sliceTextMapper->SetInput( sliceMessage.c_str() );
-    sliceTextMapper->SetTextProperty( sliceTextProperty );
+    sliceTextMapper->SetTextProperty( textProperty );
 
-    imageViewer->GetWindowLevel()->SetLevel( 200 );
-    vtkSmartPointer<vtkTextMapper> WindowLevelTextMapper = vtkSmartPointer<vtkTextMapper>::New();
-    std::string windowLevelMessage = ImageMessage::windowLevelFormat( int( imageViewer->GetWindowLevel()->GetLevel() ) );
-    WindowLevelTextMapper->SetInput( windowLevelMessage.c_str() );
-    WindowLevelTextMapper->SetTextProperty( WindowLevelTextProperty );
+    vtkSmartPointer<vtkTextMapper> filterTextMapper1 = vtkSmartPointer<vtkTextMapper>::New();
+    std::string filterMessage1 = ImageMessage::filterFormat( "Gaussian", meanForeground[1]/std[1] );
+    filterTextMapper1->SetInput( filterMessage1.c_str() );
+    filterTextMapper1->SetTextProperty( textProperty );
 
-    imageViewer->GetWindowLevel()->SetWindow( 200 );
-    vtkSmartPointer<vtkTextMapper> WindowTextMapper = vtkSmartPointer<vtkTextMapper>::New();
-    std::string windowMessage = ImageMessage::windowFormat( int( imageViewer->GetWindowLevel()->GetWindow() ) );
-    WindowTextMapper->SetInput( windowMessage.c_str() );
-    WindowTextMapper->SetTextProperty( WindowTextProperty );
+    vtkSmartPointer<vtkTextMapper> filterTextMapper2 = vtkSmartPointer<vtkTextMapper>::New();
+    std::string filterMessage2 = ImageMessage::filterFormat( "Median", meanForeground[2]/std[2] );
+    filterTextMapper2->SetInput( filterMessage2.c_str() );
+    filterTextMapper2->SetTextProperty( textProperty );
+
+    vtkSmartPointer<vtkTextMapper> filterTextMapper3 = vtkSmartPointer<vtkTextMapper>::New();
+    std::string filterMessage3 = ImageMessage::filterFormat( "None", meanForeground[0]/std[0] );
+    filterTextMapper3->SetInput( filterMessage3.c_str() );
+    filterTextMapper3->SetTextProperty( textProperty );
 
     // Create the actors for each message.
     vtkSmartPointer<vtkActor2D> sliceTextActor = vtkSmartPointer<vtkActor2D>::New();
     sliceTextActor->SetMapper( sliceTextMapper );
+    sliceTextActor->GetPositionCoordinate()->SetValue( 0.3, 1.0 );
 
-    vtkSmartPointer<vtkActor2D> windowLevelTextActor = vtkSmartPointer<vtkActor2D>::New();
-    windowLevelTextActor->SetMapper( WindowLevelTextMapper );
+    vtkSmartPointer<vtkActor2D> filterTextActor1 = vtkSmartPointer<vtkActor2D>::New();
+    filterTextActor1->SetMapper( filterTextMapper1 );
 
-    vtkSmartPointer<vtkActor2D> windowTextActor = vtkSmartPointer<vtkActor2D>::New();
-    windowTextActor->SetMapper( WindowTextMapper );
+    vtkSmartPointer<vtkActor2D> filterTextActor2 = vtkSmartPointer<vtkActor2D>::New();
+    filterTextActor2->SetMapper( filterTextMapper2 );
 
-    // Specify the position of each message to be in the top left corner of the display.
-    sliceTextActor->GetPositionCoordinate()->SetCoordinateSystemToNormalizedDisplay();
-    sliceTextActor->GetPositionCoordinate()->SetValue( 0.05, 0.95);
+    vtkSmartPointer<vtkActor2D> filterTextActor3 = vtkSmartPointer<vtkActor2D>::New();
+    filterTextActor3->SetMapper( filterTextMapper3 );
 
-    windowLevelTextActor->GetPositionCoordinate()->SetCoordinateSystemToNormalizedDisplay();
-    windowLevelTextActor->GetPositionCoordinate()->SetValue( 0.05, 0.90);
-
-    windowTextActor->GetPositionCoordinate()->SetCoordinateSystemToNormalizedDisplay();
-    windowTextActor->GetPositionCoordinate()->SetValue( 0.05, 0.85);
-    
     // Create a mask for the overlaid segmentation
     vtkSmartPointer<vtkLookupTable> lookupTable = vtkSmartPointer<vtkLookupTable>::New();
     lookupTable->SetNumberOfTableValues( 2 );
     lookupTable->SetTableRange( 0.0, 1.0 );
     lookupTable->SetTableValue( 0.0, 0.0, 0.0, 0.0, 0.0 );
-    lookupTable->SetTableValue( 0.0, 1.0, 0.0, 0.0, 1.0 );
+    lookupTable->SetTableValue( 1.0, 1.0, 0.0, 0.0, 1.0 );
     lookupTable->Build();
 
     vtkSmartPointer<vtkImageMapToColors> mapTransparency = vtkSmartPointer<vtkImageMapToColors>::New();
@@ -366,6 +360,18 @@ int main(int argc, char* argv[])
     segMapper->SetColorWindow( 1 );
     segMapper->SetColorLevel( 1 );
 
+    vtkSmartPointer<vtkImageMapper> gaussMapper = vtkSmartPointer<vtkImageMapper>::New();
+    gaussMapper->SetInputData( gaussianImage );
+    gaussMapper->SetZSlice( 1 );
+    gaussMapper->SetColorWindow( 1000 );
+    gaussMapper->SetColorLevel( 500 );
+
+    vtkSmartPointer<vtkImageMapper> medianMapper = vtkSmartPointer<vtkImageMapper>::New();
+    medianMapper->SetInputData( medianImage );
+    medianMapper->SetZSlice( 1 );
+    medianMapper->SetColorWindow( 1000 );
+    medianMapper->SetColorLevel( 500 );
+
     // Create actors for the original and segmented images
     vtkSmartPointer<vtkActor2D> imageActor = vtkSmartPointer<vtkActor2D>::New();
     imageActor->SetMapper( originalMapper );
@@ -373,11 +379,28 @@ int main(int argc, char* argv[])
     vtkSmartPointer<vtkActor2D> maskActor = vtkSmartPointer<vtkActor2D>::New();
     maskActor->SetMapper( segMapper );
 
+    vtkSmartPointer<vtkActor2D> gaussActor = vtkSmartPointer<vtkActor2D>::New();
+    gaussActor->SetMapper( gaussMapper );
+
+    vtkSmartPointer<vtkActor2D> medianActor = vtkSmartPointer<vtkActor2D>::New();
+    medianActor->SetMapper( medianMapper );
+
     // Create the renderer and render window
-    vtkSmartPointer<vtkRenderer> renderer = vtkSmartPointer<vtkRenderer>::New();
+    vtkSmartPointer<vtkRenderer> rendererOG = vtkSmartPointer<vtkRenderer>::New();
+    vtkSmartPointer<vtkRenderer> rendererSEG = vtkSmartPointer<vtkRenderer>::New();
+    vtkSmartPointer<vtkRenderer> rendererGAUSS = vtkSmartPointer<vtkRenderer>::New();
+    vtkSmartPointer<vtkRenderer> rendererMEDIAN = vtkSmartPointer<vtkRenderer>::New();
+
+    rendererOG->SetViewport( xMin[0], yMin[0], xMax[0], yMax[0] );
+    rendererSEG->SetViewport( xMin[1], yMin[1], xMax[1], yMax[1] );
+    rendererGAUSS->SetViewport( xMin[2], yMin[2], xMax[2], yMax[2] );
+    rendererMEDIAN->SetViewport( xMin[3], yMin[3], xMax[3], yMax[3] );
 
     vtkSmartPointer<vtkRenderWindow> renderWindow = vtkSmartPointer<vtkRenderWindow>::New();
-    renderWindow->AddRenderer( renderer );
+    renderWindow->AddRenderer( rendererOG );
+    renderWindow->AddRenderer( rendererSEG );
+    renderWindow->AddRenderer( rendererGAUSS );
+    renderWindow->AddRenderer( rendererMEDIAN );
 
     vtkSmartPointer<vtkRenderWindowInteractor> interactor = vtkSmartPointer<vtkRenderWindowInteractor>::New();
     interactor->SetRenderWindow( renderWindow );
@@ -385,27 +408,34 @@ int main(int argc, char* argv[])
     vtkSmartPointer<myInteractorStyler> interactorStyle = vtkSmartPointer<myInteractorStyler>::New();
 
     // Set the image viewer and status mapper to enable message updates when interacting with the image.
-    interactorStyle->setImageViewer( originalMapper, segMapper, renderWindow );
+    interactorStyle->setImageViewer( originalMapper, segMapper, gaussMapper,  medianMapper, renderWindow );
     interactorStyle->setSliceStatusMapper( sliceTextMapper );
-    interactorStyle->setWindowLevelStatusMapper( WindowLevelTextMapper );
-    interactorStyle->setWindowStatusMapper( WindowTextMapper );
 
     interactor->SetInteractorStyle( interactorStyle );
 
-    renderer->AddActor( imageActor );
-    renderer->AddActor( maskActor );
-    renderer->AddActor2D( sliceTextActor );
-    renderer->AddActor2D( windowLevelTextActor );
-    renderer->AddActor2D( windowTextActor );
+    rendererSEG->AddActor( imageActor );
+    rendererSEG->AddActor( maskActor );
+    rendererSEG->AddActor( sliceTextActor );
 
-    renderer->SetBackground( 0.0, 0.0, 0.0 );
+    rendererOG->AddActor( imageActor );
+    rendererOG->AddActor( filterTextActor3 );
 
-    renderWindow->SetSize( imageViewer->GetRenderWindow()->GetScreenSize() );
+    rendererGAUSS->AddActor( gaussActor );
+    rendererGAUSS->AddActor( filterTextActor1 );
+
+    rendererMEDIAN->AddActor( medianActor );
+    rendererMEDIAN->AddActor( filterTextActor2 );
+
+    renderWindow->SetSize( 800, 800 );
+
+    rendererOG->ResetCamera();
+    rendererSEG->ResetCamera();
+    rendererGAUSS->ResetCamera();
+    rendererMEDIAN->ResetCamera();
+
     renderWindow->Render();
 
     std::cout << "Done! \n";
-
-    renderer->ResetCamera();
 
     interactor->Initialize();
     interactor->Start();
