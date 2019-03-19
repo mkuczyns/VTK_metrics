@@ -32,6 +32,13 @@ std::string ImageMessage::windowFormat( int window )
     tmp << "Window:  " << window;
     return tmp.str();
 }
+
+std::string ImageMessage::filterFormat( std::string text, double snr )
+{
+    std::stringstream tmp;
+    tmp << "Filter:  " << text << ", SNR = " << std::setprecision(4) << snr;
+    return tmp.str();
+}
 /***************************************************************************/
 
 /************************* Other helper functions **************************/

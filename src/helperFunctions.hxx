@@ -71,6 +71,9 @@
 #include <vtkImageMask.h>
 #include <vtkExtractVOI.h>
 #include <vtkImageCast.h>
+#include <vtkCamera.h>
+#include <vtkTextActor.h>
+#include <vtkTextProperty.h>
 
 /* 
 *   A helper class to display messages with information about current slice
@@ -106,6 +109,8 @@ class ImageMessage
         *   @returns A string steam with the window message
         */
         static std::string windowFormat( int window );
+
+        static std::string filterFormat( std::string text, double snr );
 };
 
 /************************* Other helper functions **************************/
